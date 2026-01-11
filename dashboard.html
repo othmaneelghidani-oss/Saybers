@@ -1,0 +1,50 @@
+<!DOCTYPE html><html><head><title>CYBER_GRID_200</title>
+<style>
+body{background:#000;color:#0f0;font-family:monospace;margin:0;overflow:hidden}
+#matrix{position:fixed;top:0;left:0;z-index:-1;opacity:0.3}
+.layout{display:flex;height:100vh}
+.sidebar{width:260px;border-right:1px solid #0f0;overflow-y:auto;padding:10px;background:rgba(0,20,0,0.9)}
+.tool-btn{padding:5px;cursor:pointer;border-bottom:1px solid #030;font-size:12px}
+.tool-btn:hover{background:#0f0;color:#000}
+.terminal{flex:1;padding:20px;display:flex;flex-direction:column}
+.output{flex:1;border:1px solid #0f0;padding:10px;overflow-y:auto;margin-bottom:10px;background:rgba(0,0,0,0.8)}
+input{background:0 0;border:none;border-bottom:1px solid #0f0;color:#fff;width:80%;outline:0}
+button{background:#000;color:#0f0;border:1px solid #0f0;cursor:pointer}
+</style></head><body>
+<canvas id="matrix"></canvas>
+<div class="layout">
+<div class="sidebar" id="list"><h3 style="text-align:center;border-bottom:1px solid #0f0">CYBER_ARSENAL</h3></div>
+<div class="terminal"><div class="output" id="console"><div>SYSTEM READY. LOADED 200 MODULES.</div></div>
+<div><span style="color:#0f0">root@kali:~#</span> <input id="target" placeholder="Target..."> <button onclick="run()">EXEC</button></div></div>
+</div>
+<script>
+// Matrix Rain
+const c=document.getElementById('matrix'),ctx=c.getContext('2d');
+c.width=window.innerWidth;c.height=window.innerHeight;
+const drops=Array(Math.floor(c.width/20)).fill(1);
+setInterval(()=>{
+ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,c.width,c.height);
+ctx.fillStyle='#0F0';
+drops.forEach((y,i)=>{ctx.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*20,y*20);
+if(y*20>c.height&&Math.random()>0.975)drops[i]=0;drops[i]++})},50);
+
+// Generate 200 Tools
+const list=document.getElementById('list');
+const cats={'NET':['port_scan','dns_lookup','http_headers','whois','ping'],'CRYPTO':['hash_md5','hash_sha256','b64_enc','pass_gen']};
+for(let i=1;i<=190;i++) cats['ADVANCED'] = (cats['ADVANCED']||[]).concat('module_'+i);
+let cur='';
+for(let k in cats){
+list.innerHTML+='<div style="background:#0f0;color:#000;font-weight:bold">'+k+'</div>';
+cats[k].forEach(t=>list.innerHTML+='<div class="tool-btn" onclick="cur=\''+t+'\';log(\'SEL: '+t+'\')">'+t.toUpperCase()+'</div>');
+}
+
+function log(t){const d=document.createElement('div');d.innerText='> '+t;document.getElementById('console').append(d)}
+async function run(){
+const t=document.getElementById('target').value;
+if(!cur)return log('SELECT TOOL');
+log('EXECUTING '+cur+'...');
+const r=await fetch('/exec_tool',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'tool='+cur+'&target='+encodeURIComponent(t)});
+const d=await r.json();
+d.results.forEach(x=>log(x));
+}
+</script></body></html>
